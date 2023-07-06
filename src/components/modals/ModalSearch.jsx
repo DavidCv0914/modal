@@ -1,45 +1,50 @@
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
-import { listCiudad,listDepartamento } from "../../api/api";
+import Col from "react-bootstrap/Col";
+import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
+import InputGroup from "react-bootstrap/InputGroup";
+import 'boxicons';
+import { listEmpresa } from "../../api/api";
 
 export const ModalSearch = (props) => {
   const [show, setShow] = useState(true);
-  const [name, setName] = useState("");
-  const [cod, setCod] = useState("");
-  const [options,setOptions] = useState([]);
+  const [options, setOptions] = useState([]);
+  const [typeSearch, setTypeSearch] = useState("");
+  const [content, setContent] = useState("");
+  const [choice, setChoice] = useState([]);
 
   const handleCloseSave = () => {
     setShow(false);
-    props.devolucion({ data: name, close: false });
+    props.devolucion({ data: choice, close: false });
   };
   const handleClose = () => {
     setShow(false);
     props.devolucion({ close: false });
   };
-  const handleShow = () => setShow(true);
 
-  useEffect(()=>{
-    if (props.search.type === "Ciudad") {
-        setOptions(listCiudad)
-    }else if(props.search.type === "Departamento"){
-        setOptions(listDepartamento)
+  const searchInfo = async () => {
+    
+    switch (props.search.type) {
+      case "Empresa":
+        if (typeSearch == "nombre") {
+          const result = await listEmpresa({ name: content });
+          setOptions(result.data);
+        }else  if (typeSearch == "codigo") {
+          const result = await listEmpresa({ cod: content });
+          setOptions(result.data);
+        }
+        break;
+
+      default:
+        break;
     }
-  },[]);
-
-    const handleOnchange = (e) =>{
-    setName(e.target.value)
-    }
-
-  console.log(options);
+  };
 
   return (
     <>
-      {/* <Button variant="primary" onClick={handleShow}>
-          Launch demo modal
-        </Button> */}
-
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Modal</Modal.Title>
@@ -47,40 +52,76 @@ export const ModalSearch = (props) => {
         <Modal.Body>
           <Form>
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
-              <Form.Label>Email address</Form.Label>
-              <Form.Control
-                onChange={(e) => setName(e.target.value)}
-                type="text"
-                placeholder={"Escriba nombre de " + props.search.type}
-                autoFocus
-              />
+              {["radio"].map((type) => (
+                <div key={`inline-${type}`} className="mb-3">
+                  <Form.Check
+                    inline
+                    label="Por nombre"
+                    checked={typeSearch == "nombre"}
+                    onChange={(e) => setTypeSearch(e.target.value)}
+                    value="nombre"
+                    name="group1"
+                    type={type}
+                    id={`inline-${type}-1`}
+                  />
+                  <Form.Check
+                    inline
+                    label="Por código"
+                    checked={typeSearch == "codigo"}
+                    onChange={(e) => setTypeSearch(e.target.value)}
+                    value="codigo"
+                    name="group1"
+                    type={type}
+                    id={`inline-${type}-2`}
+                  />
+                </div>
+              ))}
+              <InputGroup className="mb-3">
+                <Form.Control
+                  placeholder={"Busque su " + props.search.type}
+                  aria-label="Recipient's username"
+                  aria-describedby="basic-addon2"
+                  onChange={(e) => setContent(e.target.value)}
+                />
+                <Button
+                  variant="outline-secondary"
+                  id="button-addon2"
+                  onClick={searchInfo}
+                >
+                  Buscar
+                </Button>
+              </InputGroup>
             </Form.Group>
             <Form.Group
               className="mb-3"
               controlId="exampleForm.ControlTextarea1"
             >
-              <Form.Label>Example textarea</Form.Label>
-              <Form.Control
-                onChange={(e) => setCod(e.target.value)}
-                type="text"
-                placeholder={"Escriba codigo de " + props.search.type}
-                autoFocus
-              />
-              
-              <Form.Label>{props.search.type+" a escoger"}</Form.Label>
-              <Form.Select aria-label="Default" onChange={handleOnchange}>
-                <option>{"Seleccione "+props.search.type}</option>
-                {options.length>0 ? options.map((option)=>(<option key={option} value={option}>{option}</option>)):null}
-              </Form.Select>
+              <Container>
+                {options.length > 0 ? (
+                  <Form.Label>{props.search.type + " a escoger"}</Form.Label>
+                ) : null}
+                {options.length > 0
+                  ? options.map((option) => (
+                      <Row style={{border:"solid 2px #AEB6BF"}} key={option.idempresa}>
+                        <Col style={{cursor:"pointer"}} xs={12} md={8} onClick={() => setChoice(option)}>
+                          nit: {option.nit}
+                        </Col>
+                        <Col style={{cursor:"pointer"}} xs={6} md={4} onClick={() => setChoice(option)}>
+                          {option.nombre}
+                        </Col>
+                      </Row>
+                    ))
+                  : null}
+              </Container>
             </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>
-            Close
+            Cerrar
           </Button>
           <Button variant="primary" onClick={handleCloseSave}>
-            Save Changes
+            Aceptar
           </Button>
         </Modal.Footer>
       </Modal>
