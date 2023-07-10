@@ -4,6 +4,7 @@ import Form from "react-bootstrap/Form";
 import { ModalSearch } from "./components/modals/ModalSearch";
 import InputGroup from "react-bootstrap/InputGroup";
 import { getDatos } from "./api/api";
+import "./App.css";
 
 function App() {
   const codEmpresa = useRef(null);
@@ -80,7 +81,7 @@ function App() {
           <Form.Control ref={nameEmpresa} name="nameEmpresa" type="text" placeholder="Escriba" style={{width:"47%",height:"40px"}} defaultValue={choice ? choice.nombre : null } />
         </Form.Group>
         <Form.Label style={{width:"53%"}}>id de la persona</Form.Label>
-        <Form.Label>Nombre de la person</Form.Label>
+        <Form.Label>Nombre de la persona</Form.Label>
         <Form.Group className="mb-3" controlId="formBasicEmail" style={{display:"flex", justifyContent:"space-between"}}>
           <InputGroup className="mb-3" style={{width:"47%"}}>
             <Form.Control

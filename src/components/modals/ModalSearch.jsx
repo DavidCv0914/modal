@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
@@ -10,6 +10,7 @@ import 'boxicons';
 import { listEmpresa, listPerson } from "../../api/api";
 
 export const ModalSearch = (props) => {
+  const element = useRef(null) 
   const [show, setShow] = useState(true);
   const [options, setOptions] = useState([]);
   const [typeSearch, setTypeSearch] = useState("");
@@ -70,6 +71,36 @@ export const ModalSearch = (props) => {
     }
   };
 
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      const scrollableElement = element.current;
+
+      if (event.key === 'ArrowUp') {
+        scrollableElement.scrollTop -= 10; 
+        event.preventDefault(); 
+      }
+
+      if (event.key === 'ArrowDown') {
+        scrollableElement.scrollTop += 10;
+        event.preventDefault(); 
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  const handleStyle = (option) =>{
+    if (choice.idempresa == option.idempresa) {
+      return{ backgroundColor: "#76A6E7",cursor:"pointer"}
+    }else{
+      return{ backgroundColor: "initial",cursor:"pointer"}
+    }
+  }
+
   return (
     <>
       <Modal show={show} onHide={handleClose}>
@@ -123,17 +154,17 @@ export const ModalSearch = (props) => {
               className="mb-3"
               controlId="exampleForm.ControlTextarea1"
             >
-              <Container>
+              {options.length > 2 ? <Container ref={element} style={{overflowY: "scroll",height: "100px", }}>
                 {options.length > 0 ? (
                   <Form.Label>{props.search.type + " a escoger"}</Form.Label>
                 ) : null}
                 {options.length > 0 && props.search.type == "Empresa"
                   ? options.map((option) => (
-                    <Row style={{ border: "solid 2px #AEB6BF" }} key={option.idempresa}>
-                      <Col style={{ cursor: "pointer" }} xs={12} md={8} onClick={() => setChoice(option)}>
+                    <Row className="col" key={option.idempresa}>
+                      <Col style={handleStyle(option)} xs={12} md={8} onClick={() => setChoice(option)}>
                         nit: {option.nit}
                       </Col>
-                      <Col style={{ cursor: "pointer" }} xs={6} md={4} onClick={() => setChoice(option)}>
+                      <Col style={handleStyle(option)} xs={6} md={4} onClick={() => setChoice(option)}>
                         {option.nombre}
                       </Col>
                     </Row>
@@ -141,17 +172,46 @@ export const ModalSearch = (props) => {
                   : null}
                   {options.length > 0 && props.search.type == "Persona"
                   ? options.map((option) => (
-                    <Row style={{ border: "solid 2px #AEB6BF" }} key={option.idusuario}>
-                      <Col style={{ cursor: "pointer" }} xs={12} md={8} onClick={() => setChoice(option)}>
+                    <Row className="col" key={option.idusuario}>
+                      <Col style={handleStyle(option)} xs={12} md={8} onClick={() => setChoice(option)}>
                         identificación: {option.idusuario}
                       </Col>
-                      <Col style={{ cursor: "pointer" }} xs={6} md={4} onClick={() => setChoice(option)}>
+                      <Col style={handleStyle(option)} xs={6} md={4} onClick={() => setChoice(option)}>
                         {option.nombre}
                       </Col>
                     </Row>
                   ))
                   : null}
-              </Container>
+              </Container> :
+              <Container ref={element} style={{height:"100px"}}>
+              {options.length > 0 ? (
+                <Form.Label>{props.search.type + " a escoger"}</Form.Label>
+              ) : null}
+              {options.length > 0 && props.search.type == "Empresa"
+                ? options.map((option) => (
+                  <Row className="col" key={option.idempresa}>
+                    <Col style={{cursor:"pointer"}} xs={12} md={8} onClick={() => setChoice(option)}>
+                      nit: {option.nit}
+                    </Col>
+                    <Col style={{cursor:"pointer"}} xs={6} md={4} onClick={() => setChoice(option)}>
+                      {option.nombre}
+                    </Col>
+                  </Row>
+                ))
+                : null}
+                {options.length > 0 && props.search.type == "Persona"
+                ? options.map((option) => (
+                  <Row className="col" key={option.idusuario}>
+                    <Col style={{cursor:"pointer"}} xs={12} md={8} onClick={() => setChoice(option)}>
+                      identificación: {option.idusuario}
+                    </Col>
+                    <Col style={{cursor:"pointer"}} xs={6} md={4} onClick={() => setChoice(option)}>
+                      {option.nombre}
+                    </Col>
+                  </Row>
+                ))
+                : null}
+            </Container>}
             </Form.Group>
           </Form>
         </Modal.Body>
